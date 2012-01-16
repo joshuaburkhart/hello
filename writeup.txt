@@ -12,14 +12,18 @@ mutual blocking. I postulate this forces each slave's private string
 stream to push to stdout though could not find definitive
 documentation. Blocking, of course, degrades performance.. but I 
 don't think performance was the main point of the assignment.
+
 Following the synchronization, the master process begins listening
 for messages from the slaves and the slaves start sending them. The
 master places the received messages into a string stream and plops
-them all out after collection. Notice that the sending of each
-individual "yeah" message sent by the slaves to the master is
-asynchronous (shown by my appension of the "from x"). I suspect it
-would be possible to see the slaves' private string streams (i.e.
-their spanish numbers and ! messages) to garble together as their
-use of stdout is not synchronized. The rest of the messages are
-printed to the screen by the master alone and should never be
-garbled.
+them all out after collection.
+
+Notice that the sending of each individual "yeah" message sent by
+the slaves to the master is asynchronous (shown by my appension of
+the "from x").
+
+I suspect it would be possible for the slaves' private string
+streams (i.e. their spanish numbers and ! messages) to garble
+together as their use of stdout is not synchronized. The rest of the
+messages are printed to the screen by the master alone and should
+never be garbled.
