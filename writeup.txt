@@ -3,27 +3,10 @@ Joshua Burkhart
 Dr. John Connery
 CIS 455/555
 
-While working on this project I noticed that slave threads were
-pushing to stdout in an unsynchronized manner (the spanish numbers
-and !'s are not always printed in the same order). I prevented this
-from interfering with subsequent requirements of the project by 
-adding a call to "MPI_Barrier" which synchronizes all processes by
-mutual blocking. I postulate this forces each slave's private string
-stream to push to stdout though could not find definitive
-documentation. Blocking, of course, degrades performance.. but I 
-don't think performance was the main point of the assignment.
+While working on this project I noticed that slave threads were pushing to stdout in an asynchronous manner (the spanish numbers and !'s are not always printed in the same order). Initially, I prevented this from interfering with subsequent requirements of the project by replacing "MPI_Send()" with a call to "MPI_Ssend()" which solved the problem. On further scrutinization, I realized that synchronizing the message transfer from the master to the slaves was not what fixed the problem per se. The reason the problem went away was simply because "MPI_Ssend()" takes longer to complete (it blocks until "MPI_Recv" posts) than "MPI_Send()" does. Because "MPI_Ssend()" is not a well known function, I refactored the code to simply use "sleep()".. which makes the fatal flaw of the program (the slaves' use of stdout) more obvious. The use "sleep()", of course, degrades performance (and looks amaturish), but I don't think performance was the main point of the assignment.
 
-Following the synchronization, the master process begins listening
-for messages from the slaves and the slaves start sending them. The
-master places the received messages into a string stream and plops
-them all out after collection.
+Following the sleep, the master process begins listening for messages from the slaves and the slaves start sending them. The master listens in a loop for responses and plops them each out as it receives them.
 
-Notice that the sending of each individual "yeah" message sent by
-the slaves to the master is asynchronous (shown by my appension of
-the "from x").
+Notice that the sending of each individual "yeah" message sent by the slaves to the master is asynchronous.
 
-I suspect it would be possible for the slaves' private string
-streams (i.e. their spanish numbers and ! messages) to garble
-together as their use of stdout is not synchronized. The rest of the
-messages are printed to the screen by the master alone and should
-never be garbled.
+I suspect it would be possible for the slaves' private string streams (i.e. their spanish numbers and ! messages) to garble together as their use of stdout is not synchronized. The rest of the messages are received and printed by the master alone and should never be garbled.

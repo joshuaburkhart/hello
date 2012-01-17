@@ -47,8 +47,9 @@ int main(int argc, char *argv[])
       string msg = ((i < n) ? numbers[i] : "!");
       msg += '\0';
       msg.copy(buf,msg.length());
-      MPI_Ssend(buf,msg.length(),MPI_CHAR,i,0,MPI_COMM_WORLD);
+      MPI_Send(buf,msg.length(),MPI_CHAR,i,0,MPI_COMM_WORLD);
     }
+  sleep(1); //obviously brittle design
   memset(buf,0,10);
   printf("I'm at a place called vertigo\n");
   for(int i=1; i < nprocs; i++){
