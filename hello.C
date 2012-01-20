@@ -36,30 +36,28 @@ int main(int argc, char *argv[])
 
   const int MAX_MSG_SIZE = 100;
   char buf[MAX_MSG_SIZE];
+  char buf2[MAX_MSG_SIZE] = "I'm at a place called vertigo\n";
+  MPI_Status s;
 
   // Process 0 sends a message, other processes wait for the message
   // and print it when they receive it.
 
   if (myid == 0) {
-    const char *numbers[] = {"", "unos", "dos", "tres", "catorce"};
-    int n = (sizeof(numbers)/sizeof(char *));
+    string numbers[] = {"", "unos", "dos", "tres", "catorce"};
+    int n = (sizeof(numbers) / sizeof(string *) );
     for (int i = 1; i < nprocs; i++) {
       string msg = ((i < n) ? numbers[i] : "!");
       msg += '\0';
       msg.copy(buf,msg.length());
       MPI_Send(buf,msg.length(),MPI_CHAR,i,0,MPI_COMM_WORLD);
+      memset(buf,0,10);
+      MPI_Recv(buf,MAX_MSG_SIZE,MPI_CHAR,MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,&s);
+      strcat(buf2,buf); 
+      strcat(buf2,"\n");     
     }
-  sleep(1); //obviously brittle design
-  memset(buf,0,10);
-  printf("I'm at a place called vertigo\n");
-  for(int i=1; i < nprocs; i++){
-      MPI_Status t;
-      MPI_Recv(buf,MAX_MSG_SIZE,MPI_CHAR,MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,&t);
-      cout << buf << endl;  
-    }
+  cout << buf2 << endl;
   }
   else {
-    MPI_Status s;
     MPI_Recv(buf,MAX_MSG_SIZE,MPI_CHAR,MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,&s);
     cout << buf << endl; //asynchronous push to stdout
     string msg="yeah";
