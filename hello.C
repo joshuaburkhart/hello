@@ -56,10 +56,8 @@ int main(int argc, char *argv[])
     for (int i = 1; i < nprocs; i++) {
       memset(buf,0,10);
       MPI_Recv(buf,MAX_MSG_SIZE,MPI_CHAR,MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,&s);
-      strcat(buf2,buf); 
-      strcat(buf2,"\n"); 
+      cout << buf << endl;
     }
-    cout << buf2 << endl;
   }
   else {
     MPI_Recv(buf,MAX_MSG_SIZE,MPI_CHAR,MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,&s);

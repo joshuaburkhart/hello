@@ -3,10 +3,22 @@ Joshua Burkhart
 Dr. John Connery
 CIS 455/555
 
-While working on this project I noticed that slave threads were pushing to stdout in an asynchronous manner (the spanish numbers and !'s are not always printed in the same order). Initially, I prevented this from interfering with subsequent requirements of the project by replacing "MPI_Send()" with a call to "MPI_Ssend()" which solved the problem. On further scrutinization, I realized that synchronizing the message transfer from the master to the slaves was not what fixed the problem per se. The reason the problem went away was simply because "MPI_Ssend()" takes longer to complete (it blocks until "MPI_Recv" posts) than "MPI_Send()" does. Because "MPI_Ssend()" is not a well known function, I refactored the code to simply use "sleep()".. which makes the fatal flaw of the program (the slaves' use of stdout) more obvious. The use "sleep()", of course, degrades performance (and looks amaturish), but I don't think performance was the main point of the assignment.
+-------------------------------------------------------------
+Write a one-page description of what you did for this project
+-------------------------------------------------------------
 
-Following the sleep, the master process begins listening for messages from the slaves and the slaves start sending them. The master listens in a loop for responses and plops them each out as it receives them.
+For this project I modified the given source code in a way such that the master process prints "I'm in a place called vertigo" following the for loop in which it sends messages to the slaves. Each slave receives the message sent by the master, pushes to stdout, and sends "yeah" back to the master. The master enters another for loop in which it listens for messages returned by the slaves, pushing each message to stout as it receives them. I added a call to MPI_Barrier prior to each slave's send and the master's listening loop. The barrier synchronizes the slaves, allowing time for their messages to print.
 
-Notice that the sending of each individual "yeah" message sent by the slaves to the master is asynchronous.
+*Notice that the sending of each individual "yeah" message sent by the slaves to the master is asynchronous.
 
-I suspect it would be possible for the slaves' private string streams (i.e. their spanish numbers and ! messages) to garble together as their use of stdout is not synchronized. The rest of the messages are received and printed by the master alone and should never be garbled.
+-----------------------------------------------------------------
+Are the strings always printed in the same order? Why or why not?
+-----------------------------------------------------------------
+
+Because of the call to MPI_Barrier, the master (usually) prints its strings ("I'm at a place called vertigo" and "yeah" strings) after the slaves' strings (spanish numbers and "!" strings) are printed. The flaw in this program is the slaves' use of cout. In order to assure the order of printed messages, they should all be printed by a single process. Because of the asynchronous use of cout, a slave's message may not print to stdout until after it has passed its barrier and sent its "yeah" string to the master.
+
+---------------------------------------------------------------------------------------------------------------------------------
+Why aren't the individual messages garbled? E.g. is it possible that during some future run the output might include the line […]
+---------------------------------------------------------------------------------------------------------------------------------
+
+Each process (the master and each slave) have their own private stream buffers, and should each print to stdout atomically (one private stream buffer at a time). This does not assure that the private stream buffers are printed to the screen in any specific order.
